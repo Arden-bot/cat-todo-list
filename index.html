@@ -1,0 +1,573 @@
+# cat-todo-list
+🐱 我的猫咪主题待办清单
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🐱 喵星人待办清单</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #ffeaa7 0%, #fab1a0 50%, #fd79a8 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 30px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+        }
+
+        /* 猫咪头部装饰 */
+        .cat-header {
+            text-align: center;
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        .cat-ears {
+            display: flex;
+            justify-content: center;
+            gap: 80px;
+            margin-bottom: -20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .ear {
+            width: 0;
+            height: 0;
+            border-left: 25px solid transparent;
+            border-right: 25px solid transparent;
+            border-bottom: 50px solid #fd79a8;
+            position: relative;
+        }
+
+        .ear::after {
+            content: '';
+            position: absolute;
+            left: -15px;
+            top: 15px;
+            border-left: 15px solid transparent;
+            border-right: 15px solid transparent;
+            border-bottom: 30px solid #ffeaa7;
+        }
+
+        h1 {
+            color: #2d3436;
+            font-size: 28px;
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .cat-paw {
+            font-size: 32px;
+            animation: wave 2s infinite;
+            display: inline-block;
+        }
+
+        @keyframes wave {
+            0%, 100% { transform: rotate(-10deg); }
+            50% { transform: rotate(10deg); }
+        }
+
+        .date-display {
+            text-align: center;
+            color: #636e72;
+            margin-top: 10px;
+            font-size: 14px;
+            background: #ffeaa7;
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+        }
+
+        /* 输入区域 - 猫爪样式 */
+        .input-section {
+            background: #fff5f5;
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 25px;
+            border: 3px dashed #fab1a0;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid #fab1a0;
+            border-radius: 15px;
+            font-size: 16px;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        input[type="text"]:focus {
+            border-color: #fd79a8;
+            box-shadow: 0 0 0 3px rgba(253, 121, 168, 0.1);
+        }
+
+        input[type="text"]::placeholder {
+            color: #b2bec3;
+        }
+
+        /* 猫咪按钮 */
+        .cat-btn {
+            padding: 15px 25px;
+            background: linear-gradient(135deg, #fd79a8, #e84393);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .cat-btn:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 10px 25px rgba(253, 121, 168, 0.4);
+        }
+
+        .cat-btn:active {
+            transform: translateY(-1px);
+        }
+
+        /* 优先级选择 - 小鱼形状 */
+        .priority-group {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .priority-label {
+            font-size: 14px;
+            color: #636e72;
+            width: 100%;
+            text-align: center;
+            margin-bottom: 5px;
+        }
+
+        .fish-btn {
+            padding: 8px 16px;
+            border: 2px solid #ddd;
+            background: white;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .fish-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .fish-btn.selected {
+            background: #ffeaa7;
+            border-color: #fdcb6e;
+            font-weight: bold;
+        }
+
+        /* 待办列表 */
+        .todo-list {
+            list-style: none;
+        }
+
+        .todo-item {
+            background: white;
+            margin: 12px 0;
+            padding: 15px;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+            transition: all 0.3s;
+            animation: slideIn 0.4s ease;
+            border-left: 5px solid;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .todo-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        /* 优先级颜色 */
+        .priority-high { border-left-color: #e17055; background: #fff5f5; }
+        .priority-medium { border-left-color: #fdcb6e; background: #fffbf0; }
+        .priority-low { border-left-color: #00b894; background: #f0fff4; }
+
+        .checkbox {
+            width: 24px;
+            height: 24px;
+            border: 3px solid #fab1a0;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            transition: all 0.3s;
+            flex-shrink: 0;
+        }
+
+        .checkbox:hover {
+            transform: scale(1.2);
+        }
+
+        .checkbox.checked {
+            background: #00b894;
+            border-color: #00b894;
+            color: white;
+        }
+
+        .todo-text {
+            flex: 1;
+            font-size: 16px;
+            color: #2d3436;
+            transition: all 0.3s;
+        }
+
+        .todo-text.completed {
+            text-decoration: line-through;
+            color: #b2bec3;
+        }
+
+        .priority-tag {
+            font-size: 12px;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-weight: bold;
+        }
+
+        .tag-high { background: #ff7675; color: white; }
+        .tag-medium { background: #fdcb6e; color: #2d3436; }
+        .tag-low { background: #55efc4; color: #2d3436; }
+
+        .delete-btn {
+            background: #ff7675;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 12px;
+            opacity: 0;
+            transition: all 0.3s;
+        }
+
+        .todo-item:hover .delete-btn {
+            opacity: 1;
+        }
+
+        .delete-btn:hover {
+            background: #d63031;
+            transform: scale(1.1);
+        }
+
+        /* 统计区域 */
+        .stats {
+            margin-top: 20px;
+            padding: 15px;
+            background: linear-gradient(135deg, #dfe6e9, #b2bec3);
+            border-radius: 15px;
+            text-align: center;
+            color: #2d3436;
+            font-size: 14px;
+        }
+
+        .cat-mood {
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+
+        /* 空状态 */
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #b2bec3;
+        }
+
+        .empty-cat {
+            font-size: 60px;
+            margin-bottom: 15px;
+            animation: sleep 3s infinite;
+        }
+
+        @keyframes sleep {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        /* 响应式 */
+        @media (max-width: 480px) {
+            .container {
+                padding: 20px;
+            }
+            h1 {
+                font-size: 22px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 猫咪头部 -->
+        <div class="cat-header">
+            <div class="cat-ears">
+                <div class="ear"></div>
+                <div class="ear"></div>
+            </div>
+            <h1>
+                <span class="cat-paw">🐾</span>
+                喵星人待办清单
+                <span class="cat-paw">🐾</span>
+            </h1>
+            <div style="text-align: center;">
+                <span class="date-display" id="dateDisplay">🐱 加载中...</span>
+            </div>
+        </div>
+
+        <!-- 输入区域 -->
+        <div class="input-section">
+            <div class="input-group">
+                <input type="text" id="todoInput" placeholder="喵~ 今天要做什么呀？" onkeypress="handleEnter(event)">
+                <button class="cat-btn" onclick="addTodo()">
+                    <span>🐱</span>
+                    <span>添加</span>
+                </button>
+            </div>
+            
+            <div class="priority-group">
+                <span class="priority-label">选择优先级（小鱼干数量）：</span>
+                <button class="fish-btn selected" onclick="setPriority('high')" id="btn-high">
+                    🐟🐟🐟 紧急
+                </button>
+                <button class="fish-btn" onclick="setPriority('medium')" id="btn-medium">
+                    🐟🐟 重要
+                </button>
+                <button class="fish-btn" onclick="setPriority('low')" id="btn-low">
+                    🐟 一般
+                </button>
+            </div>
+        </div>
+
+        <!-- 待办列表 -->
+        <ul class="todo-list" id="todoList">
+            <!-- 这里会动态生成内容 -->
+        </ul>
+
+        <!-- 统计 -->
+        <div class="stats" id="stats">
+            <div class="cat-mood">😺</div>
+            <div id="statsText">今天还没有任务哦，快添加一个吧！</div>
+        </div>
+    </div>
+
+    <script>
+        // 当前选中的优先级
+        let currentPriority = 'high';
+        
+        // 从本地存储加载数据
+        let todos = JSON.parse(localStorage.getItem('catTodos') || '[]');
+        
+        // 显示日期
+        function showDate() {
+            const dateDisplay = document.getElementById('dateDisplay');
+            const today = new Date();
+            const weekDays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+            
+            dateDisplay.innerHTML = `🐱 ${today.getFullYear()}年${today.getMonth() + 1}月${today.getDate()}日 ${weekDays[today.getDay()]} 🐱`;
+        }
+
+        // 设置优先级
+        function setPriority(priority) {
+            currentPriority = priority;
+            
+            // 更新按钮样式
+            document.querySelectorAll('.fish-btn').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            document.getElementById('btn-' + priority).classList.add('selected');
+        }
+
+        // 添加待办
+        function addTodo() {
+            const input = document.getElementById('todoInput');
+            const text = input.value.trim();
+            
+            if (text === '') {
+                alert('喵？你还没输入内容呢！');
+                return;
+            }
+
+            const todo = {
+                id: Date.now(),
+                text: text,
+                completed: false,
+                priority: currentPriority,
+                createdAt: new Date().toLocaleString('zh-CN')
+            };
+
+            todos.unshift(todo); // 新任务加到最前面
+            saveTodos();
+            input.value = '';
+            renderTodos();
+            updateStats();
+        }
+
+        // 回车键添加
+        function handleEnter(event) {
+            if (event.key === 'Enter') {
+                addTodo();
+            }
+        }
+
+        // 切换完成状态
+        function toggleTodo(id) {
+            const todo = todos.find(t => t.id === id);
+            if (todo) {
+                todo.completed = !todo.completed;
+                saveTodos();
+                renderTodos();
+                updateStats();
+            }
+        }
+
+        // 删除待办
+        function deleteTodo(id) {
+            if (confirm('确定要删除这个任务吗？喵~')) {
+                todos = todos.filter(t => t.id !== id);
+                saveTodos();
+                renderTodos();
+                updateStats();
+            }
+        }
+
+        // 保存到本地存储
+        function saveTodos() {
+            localStorage.setItem('catTodos', JSON.stringify(todos));
+        }
+
+        // 获取优先级样式
+        function getPriorityClass(priority) {
+            const classes = {
+                'high': 'priority-high',
+                'medium': 'priority-medium',
+                'low': 'priority-low'
+            };
+            return classes[priority] || 'priority-medium';
+        }
+
+        function getPriorityTag(priority) {
+            const tags = {
+                'high': '<span class="priority-tag tag-high">🐟🐟🐟 紧急</span>',
+                'medium': '<span class="priority-tag tag-medium">🐟🐟 重要</span>',
+                'low': '<span class="priority-tag tag-low">🐟 一般</span>'
+            };
+            return tags[priority] || tags['medium'];
+        }
+
+        // 渲染列表
+        function renderTodos() {
+            const list = document.getElementById('todoList');
+            
+            if (todos.length === 0) {
+                list.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-cat">😺</div>
+                        <div>还没有待办事项哦</div>
+                        <div style="font-size: 14px; margin-top: 10px;">快添加第一个任务吧！</div>
+                    </div>
+                `;
+                return;
+            }
+
+            list.innerHTML = todos.map(todo => `
+                <li class="todo-item ${getPriorityClass(todo.priority)}">
+                    <div class="checkbox ${todo.completed ? 'checked' : ''}" onclick="toggleTodo(${todo.id})">
+                        ${todo.completed ? '✓' : ''}
+                    </div>
+                    <span class="todo-text ${todo.completed ? 'completed' : ''}">
+                        ${todo.text}
+                    </span>
+                    ${getPriorityTag(todo.priority)}
+                    <button class="delete-btn" onclick="deleteTodo(${todo.id})">删除</button>
+                </li>
+            `).join('');
+        }
+
+        // 更新统计和猫咪心情
+        function updateStats() {
+            const total = todos.length;
+            const completed = todos.filter(t => t.completed).length;
+            const remaining = total - completed;
+            
+            const statsText = document.getElementById('statsText');
+            const catMood = document.querySelector('.cat-mood');
+            
+            let mood = '';
+            let text = '';
+            
+            if (total === 0) {
+                mood = '😺';
+                text = '今天还没有任务哦，快添加一个吧！';
+            } else if (remaining === 0) {
+                mood = '😸';
+                text = `太棒了！全部${total}个任务都完成了！奖励你一条小鱼干！🐟`;
+            } else if (completed / total >= 0.5) {
+                mood = '😽';
+                text = `已完成 ${completed}/${total}，继续加油！喵~`;
+            } else {
+                mood = '🙀';
+                text = `还有 ${remaining} 个任务待完成，别偷懒哦！`;
+            }
+            
+            catMood.textContent = mood;
+            statsText.textContent = text;
+        }
+
+        // 初始化
+        showDate();
+        renderTodos();
+        updateStats();
+    </script>
+</body>
+</html>
